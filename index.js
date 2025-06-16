@@ -8,7 +8,6 @@ bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const userMessage = msg.text;
 
-  // ส่ง typing action ระหว่างรอ AI ตอบ
   bot.sendChatAction(chatId, "typing");
 
   try {
