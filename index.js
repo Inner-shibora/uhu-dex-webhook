@@ -1,38 +1,37 @@
-const express = require('express');
-const fetch = require('node-fetch'); // v2
-require('dotenv').config();
+const TelegramBot = require("node-telegram-bot-api");
+const fetch = require("node-fetch");
+require("dotenv").config();
 
-const app = express();
-const PORT = process.env.PORT || 3000;
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const CHAT_ID = process.env.CHAT_ID;
+const bot = new TelegramBot(process.env.BOT_TOKEN, { polling: true });
 
-app.use(express.json());
+bot.on("message", async (msg) => {
+  const chatId = msg.chat.id;
+  const userMessage = msg.text;
 
-app.post('/', async (req, res) => {
-  const { pair, price, tx } = req.body;
-
-  // กำหนดข้อความแจ้งเตือนที่ส่งเข้า Telegram
-  const message = `📈 TX: ${tx || 'N/A'}\n🪙 Pair: ${pair || 'N/A'}\n💵 Price: ${price || 'N/A'}`;
-  const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+  // ส่ง typing action ระหว่างรอ AI ตอบ
+  bot.sendChatAction(chatId, "typing");
 
   try {
-    await fetch(telegramUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
-        chat_id: CHAT_ID,
-        text: message
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "user", content: userMessage }
+        ]
       })
     });
 
-    res.status(200).send('✅ Message sent to Telegram');
-  } catch (error) {
-    console.error('❌ Error sending to Telegram:', error);
-    res.status(500).send('❌ Failed to send message');
-  }
-});
+    const data = await response.json();
+    const aiReply = data.choices?.[0]?.message?.content || "❌ ไม่สามารถตอบได้ในตอนนี้";
 
-app.listen(PORT, () => {
-  console.log(`🚀 Webhook server running on port ${PORT}`);
+    bot.sendMessage(chatId, aiReply);
+  } catch (error) {
+    console.error("AI Error:", error);
+    bot.sendMessage(chatId, "❌ เกิดข้อผิดพลาดในการเชื่อมต่อ AI");
+  }
 });
