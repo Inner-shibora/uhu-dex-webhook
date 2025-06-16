@@ -10,7 +10,7 @@ const CHAT_ID = process.env.CHAT_ID;
 app.use(express.json());
 
 app.post('/', async (req, res) => {
-  const message = req.body?.message || '📢 New DEX Event Triggered!';
+  const message = req.body.message || '📢 New DEX Event Triggered!';
   const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
   try {
@@ -23,13 +23,13 @@ app.post('/', async (req, res) => {
       })
     });
 
-    res.status(200).send('Message sent to Telegram');
+    res.status(200).send('✅ Message sent to Telegram');
   } catch (error) {
-    console.error('Error sending to Telegram:', error);
-    res.status(500).send('Failed to send message');
+    console.error('❌ Error sending to Telegram:', error);
+    res.status(500).send('❌ Failed to send message');
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Webhook server running on port ${PORT}`);
+  console.log(`🚀 Webhook server running on port ${PORT}`);
 });
