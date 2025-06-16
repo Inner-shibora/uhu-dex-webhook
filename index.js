@@ -1,5 +1,5 @@
 const express = require('express');
-const fetch = require('node-fetch');
+const fetch = require('node-fetch'); // v2
 require('dotenv').config();
 
 const app = express();
@@ -10,7 +10,10 @@ const CHAT_ID = process.env.CHAT_ID;
 app.use(express.json());
 
 app.post('/', async (req, res) => {
-  const message = req.body.message || '📢 New DEX Event Triggered!';
+  const { pair, price, tx } = req.body;
+
+  // กำหนดข้อความแจ้งเตือนที่ส่งเข้า Telegram
+  const message = `📈 TX: ${tx || 'N/A'}\n🪙 Pair: ${pair || 'N/A'}\n💵 Price: ${price || 'N/A'}`;
   const telegramUrl = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
   try {
